@@ -116,7 +116,7 @@ function(zetton_cc_library)
 
   include(GNUInstallDirs)
 
-  install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(DIRECTORY output_cxx/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${_NAME}_export.h"
           DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_NAME}")
