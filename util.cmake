@@ -232,7 +232,7 @@ function(pmtd_deb_library)
 
   # set(CMAKE_INSTALL_PREFIX ${ZETTON_CC_LIB_INSTALL_PATH})
 
-  install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_PREFIX}/include")
+  install(DIRECTORY output_cxx/ DESTINATION "${CMAKE_INSTALL_PREFIX}/include")
 
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${_NAME}_export.h"
           DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${_NAME}")
