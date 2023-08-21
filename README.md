@@ -48,8 +48,8 @@ find_package(OpenCV 4 REQUIRED)
 find_package(PCL REQUIRED) 
 find_package(Eigen3)
 find_package(GTest REQUIRED) 
-find_package(yaml-cpp REQUIRED) 
 find_package(absl REQUIRED)
+find_package(YamlCpp REQUIRED) 
 
 # pmtd libs
 find_package(ProtobufSensorMsgs REQUIRED)
@@ -119,6 +119,7 @@ pmtd_deb_library(
   ${OpenCV_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
+  ${YamlCpp_INCLUDE_DIR}
   ${ProtobufSensorMsgs_INCLUDE_DIR}
   ${ProtobufPmtdMsgs_INCLUDE_DIR}
   ${Camodocal_INCLUDE_DIR}
@@ -132,7 +133,7 @@ pmtd_deb_library(
   protobuf::libprotobuf
   ${OpenCV_LIBS}
   ${PCL_LIBRARIES}
-  ${YAML_CPP_LIBRARIES}
+  ${YamlCpp_LIBRARY}
   absl::flags
   absl::flags_parse
   ${ProtobufSensorMsgs_LIBRARY}
