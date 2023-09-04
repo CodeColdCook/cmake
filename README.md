@@ -5,10 +5,13 @@ cmake utils for pmtd repositories, extends from [project-zetton](https://github.
 
 ### usage
 
-```
+```shell
 cmake -D CMAKE_INSTALL_PREFIX=/opt/pmtd \
     -D BUILD_WITH_TESTS=ON \
-    -D INSTALL_CONFIG=ON ..
+    -D INSTALL_PROTO=ON \ # for install *.proto files
+    -D INSTALL_CONFIG=ON \ # for install config/*
+    -D ARCHITECTURE_ARM=ON \ # for build arm64 deb
+    ..
 ```
 
 ### CmakeLists
