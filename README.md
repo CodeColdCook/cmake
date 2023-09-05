@@ -19,14 +19,14 @@ cmake -D CMAKE_INSTALL_PREFIX=/opt/pmtd \
 ```cmake
 cmake_minimum_required(VERSION 3.5)
 
-project(pmtd_color_cloud 
-  VERSION 1.1
+project(pmtd_cloud_cluster 
+  VERSION 1.0
   LANGUAGES CXX)
 
 # version settings
 SET(PROJECT_VERSION_MAJOR 1)
 SET(PROJECT_VERSION_MINOR 0)
-SET(PROJECT_VERSION_PATCH 1)
+SET(PROJECT_VERSION_PATCH 0)
 
 # =============#
 # Dependencies #
@@ -53,13 +53,6 @@ find_package(Eigen3)
 find_package(GTest REQUIRED) 
 find_package(absl REQUIRED)
 find_package(YamlCpp REQUIRED) 
-
-# pmtd libs
-find_package(ProtobufSensorMsgs REQUIRED)
-find_package(ProtobufPmtdMsgs REQUIRED)
-find_package(Camodocal REQUIRED)
-find_package(PmtdDriverEcal REQUIRED)
-find_package(PmtdMsgSync REQUIRED)
 
 # =========# 
 # Settings #
@@ -123,11 +116,6 @@ pmtd_deb_library(
   ${PCL_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${YamlCpp_INCLUDE_DIR}
-  ${ProtobufSensorMsgs_INCLUDE_DIR}
-  ${ProtobufPmtdMsgs_INCLUDE_DIR}
-  ${Camodocal_INCLUDE_DIR}
-  ${PmtdDriverEcal_INCLUDE_DIR}
-  ${PmtdMsgSync_INCLUDE_DIR}
 
   DEPS
   ${GTEST_BOTH_LIBRARIES}
@@ -136,14 +124,21 @@ pmtd_deb_library(
   protobuf::libprotobuf
   ${OpenCV_LIBS}
   ${PCL_LIBRARIES}
-  ${YamlCpp_LIBRARY}
   absl::flags
   absl::flags_parse
-  ${ProtobufSensorMsgs_LIBRARY}
-  ${ProtobufPmtdMsgs_LIBRARY}
-  ${Camodocal_LIBRARY}
-  ${PmtdDriverEcal_LIBRARY}
-  ${PmtdMsgSync_LIBRARY}
+  ${YamlCpp_LIBRARY}
+
+  PMTD_PACKAGE_NAMES # pmtd依赖库名称，自动加入INCLUDE、LIBRARY
+  ProtobufSensorMsgs
+  ProtobufPmtdMsgs
+  Camodocal
+  PmtdDriverEcal
+
+  pmtd_package_names # pmtd依赖库名称，与PMTD_PACKAGE_NAMES
+  protobuf_sensor_msgs
+  protobuf_pmtd_msgs
+  camodocal
+  pmtd_driver_ecal
   )
 
 # apps and examples
@@ -163,7 +158,7 @@ pmtd_library_settings()
 
 # make deb pkg settings
 option(ARCHITECTURE_ARM "CPACK_DEBIAN_PACKAGE_ARCHITECTURE default false(amd) " OFF)
-set(description "message package for pmtd_driver_ecal")
+set(description "function for fast lidar cloud clusting")
 if (${ARCHITECTURE_ARM})
   pmtd_deb_settings("arm64" ${description})
 else(${ARCHITECTURE_ARM})

@@ -1,12 +1,104 @@
+function(pmtd_find_pkg Package package_name)
+  pkg_check_modules(PC_${Package} QUIET ${package_name})
+  find_path(${Package}_INCLUDE_DIR
+      NAMES ${package_name}/${package_name}_export.h
+      PATHS /opt/pmtd/include /usr/local/include
+      PATH_SUFFIXES ${package_name}
+      )
+  find_library(${Package}_LIBRARY
+      NAMES ${package_name}
+      PATHS /opt/pmtd/lib /usr/local/lib/
+      )
+
+  set(${Package}_VERSION ${PC_${Package}_VERSION})
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(${Package}
+      FOUND_VAR ${Package}_FOUND
+      REQUIRED_VARS
+      ${Package}_LIBRARY
+      ${Package}_INCLUDE_DIR
+      VERSION_VAR ${Package}_VERSION
+      )
+
+  if (${Package}_FOUND)
+      set(${Package}_LIBRARIES ${${Package}_LIBRARY})
+      set(${Package}_INCLUDE_DIRS ${${Package}_INCLUDE_DIR}/${package_name})
+      set(${Package}_DEFINITIONS ${PC_${Package}_CFLAGS_OTHER})
+      message(STATUS "Found ${Package} 
+        version: ${${Package}_VERSION}
+        include: ${${Package}_INCLUDE_DIRS}
+        library: ${${Package}_LIBRARIES}")
+      mark_as_advanced(
+          ${Package}_INCLUDE_DIR
+          ${Package}_LIBRARY
+      )
+  endif ()
+endfunction()
+
+function(pmtd_pkg_modules)
+  cmake_parse_arguments(
+    PMTD_PKG_MODULE "" "NAME" "PACKAGE_NAMES;package_names"
+    ${ARGN})
+
+  set(_NAME "${PMTD_PKG_MODULE_NAME}")
+
+  list(LENGTH PMTD_PKG_MODULE_PACKAGE_NAMES len_PKG)
+  list(LENGTH PMTD_PKG_MODULE_package_names len_pkg_name)
+
+  if(NOT len_PKG EQUAL len_pkg_name)
+      message(FATAL_ERROR "PMTD packages have different lengths")
+      message(STATUS "PACKAGE_NAMES length: ${len_PKG}")
+      message(STATUS "package_names length: ${len_pkg_name}")
+  endif()
+
+  foreach(index RANGE ${len_PKG})
+    if(NOT ${index} EQUAL ${len_PKG})
+      list(GET PMTD_PKG_MODULE_PACKAGE_NAMES ${index} Package)
+      list(GET PMTD_PKG_MODULE_package_names ${index} package_name)
+      pmtd_find_pkg(${Package} ${package_name})
+    endif()
+     
+  endforeach()
+
+endfunction()
+
 # 根据输入的安装路径与配置生成so库及相关cmake配置文件
 function(pmtd_deb_library)
   cmake_parse_arguments(
-    ZETTON_CC_LIB "" "NAME" "HDRS;SRCS;COPTS;DEFINES;LINKOPTS;INCLUDES;DEPS"
+    ZETTON_CC_LIB "" "NAME" "HDRS;SRCS;COPTS;DEFINES;LINKOPTS;INCLUDES;DEPS;PMTD_PACKAGE_NAMES;pmtd_package_names"
     ${ARGN})
 
   set(_NAME "${ZETTON_CC_LIB_NAME}")
 
   include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pmtd_cmake/util_zetton.cmake)
+  # ==============#
+  # Find pmtd packages #
+  # ==============#
+  find_package(PkgConfig)
+
+  list(LENGTH ZETTON_CC_LIB_PMTD_PACKAGE_NAMES len_PKG)
+  list(LENGTH ZETTON_CC_LIB_pmtd_package_names len_pkg_name)
+
+  if(NOT len_PKG EQUAL len_pkg_name)
+      message(FATAL_ERROR "PMTD packages have different lengths")
+      message(STATUS "PMTD_PACKAGE_NAMES length: ${len_PKG}")
+      message(STATUS "pmtd_package_names length: ${len_pkg_name}")
+  endif()
+
+
+  set(PMTD_INCLUDES)
+  set(PMTD_DEPS)
+  foreach(index RANGE ${len_PKG})
+    if(NOT ${index} EQUAL ${len_PKG})
+      list(GET ZETTON_CC_LIB_PMTD_PACKAGE_NAMES ${index} Package)
+      list(GET ZETTON_CC_LIB_pmtd_package_names ${index} package_name)
+      pmtd_find_pkg(${Package} ${package_name})
+      list(APPEND PMTD_INCLUDES "${${Package}_INCLUDE_DIR}")
+      list(APPEND PMTD_DEPS "${${Package}_LIBRARY}")
+    endif()
+     
+  endforeach()
+
   # ==============#
   # Build targets #
   # ==============#
@@ -24,11 +116,13 @@ function(pmtd_deb_library)
     PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
            "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>"
-           ${ZETTON_CC_LIB_INCLUDES})
+           ${ZETTON_CC_LIB_INCLUDES}
+           ${PMTD_INCLUDES})
 
   target_link_libraries(
     ${_NAME}
     PUBLIC ${ZETTON_CC_LIB_DEPS}
+    PUBLIC ${PMTD_DEPS}
     PRIVATE ${ZETTON_CC_LIB_LINKOPTS})
 
   # compiling options
